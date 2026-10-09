@@ -40,7 +40,7 @@ El nombre viene del kanji japonés \*Susumu\* (進む), que significa avanzar/pr
 
 \- Control de versiones: Git + GitHub
 
-wazaa
+
 
 \## Estructura del repositorio
 
