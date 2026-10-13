@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS proyecto (
     descripcion         TEXT,
     fecha_inicio        DATE,
     fecha_limite        DATE,
-    prioridad           TEXT,
+    prioridad           TEXT NOT NULL DEFAULT 'Media' CHECK (prioridad IN ('Baja', 'Media', 'Alta')),
     dificultad_estimada TEXT CHECK (dificultad_estimada IN ('Baja', 'Media', 'Alta')),
     duracion_estimada   INTEGER CHECK (duracion_estimada >= 0)
 );
