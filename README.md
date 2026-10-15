@@ -58,3 +58,12 @@ El nombre viene del kanji japonés \*Susumu\* (進む), que significa avanzar/pr
 
 \_(Pendiente: se completará conforme avance el desarrollo.)\_
 
+
+## Cómo correr la base de datos
+
+1. Instala Docker Desktop y ábrelo.
+2. Copia `.env.example` como `.env` y cambia la contraseña.
+3. Desde la raíz del repo: `docker compose up -d`.
+4. Comprueba con `docker compose ps` que `susu-postgres` esté `healthy`.
+
+La primera vez, Docker crea las tablas con `database/init.sql`. Para empezar de cero (borra los datos): `docker compose down -v` y luego `docker compose up -d`.
