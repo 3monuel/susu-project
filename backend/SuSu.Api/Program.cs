@@ -6,6 +6,12 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
+builder.Services.AddHttpClient<AsistenteIAService>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.DefaultRequestHeaders.Add("x-goog-api-key", builder.Configuration["Gemini:ApiKey"]);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -21,3 +27,10 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+builder.Services.AddOpenApi();
+
+builder.Services.AddHttpClient<AsistenteIAService>(client =>
+{
+    client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+    client.DefaultRequestHeaders.Add("x-goog-api-key", builder.Configuration["Gemini:ApiKey"]);
+});
