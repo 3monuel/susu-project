@@ -1,0 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap');
+@import 'tailwindcss';
+
+:root {
+  --font-display: "Newsreader", Georgia, serif;
+  --ui-page: #f5d3b2;
+  --ui-surface: #f9dbbd;
+  --ui-auth-surface: #f7d6b5;
+  --ui-auth-input: #fbe2c7;
+  --ui-ink: #704d58;
+  --ui-action: #704d58;
+  --ui-panel: #e3a687;
+  --ui-panel-hover: #edb292;
+  --ui-project-card: #f0c2a1;
+  --ui-muted: #76645d;
+  --ui-accent: #c99465;
+  --ui-success: #a3c9ab;
+  --ui-success-soft: #e4f0e5;
+  --ui-success-ink: #426355;
+  --ui-warning: #d8ad57;
+  --ui-warning-soft: #f7e4bd;
+  --ui-warning-ink: #6f501e;
+  --ui-danger: #d8897b;
+  --ui-danger-soft: #f3ddd5;
+  --ui-danger-ink: #713f38;
+  --ui-elevation: rgba(83, 56, 43, 0.18);
+}
+
+:root[data-theme="dark"] {
+  --ui-page: #08182f;
+  --ui-surface: #163969;
+  --ui-auth-surface: #1c4476;
+  --ui-auth-input: #235486;
+  --ui-ink: #fcedad;
+  --ui-action: #e7bd3c;
+  --ui-panel: #3976a9;
+  --ui-panel-hover: #4b86b8;
+  --ui-project-card: #214a7d;
+  --ui-muted: #a3cad4;
+  --ui-accent: #e7bd3c;
+  --ui-success: #80b3a2;
+  --ui-success-soft: #254d56;
+  --ui-success-ink: #c9e5d6;
+  --ui-warning: #dbb241;
+  --ui-warning-soft: #574922;
+  --ui-warning-ink: #fae2a9;
+  --ui-danger: #cd897e;
+  --ui-danger-soft: #55373f;
+  --ui-danger-ink: #f3cec9;
+  --ui-elevation: rgba(0, 9, 36, 0.46);
+}
+
+html { background: var(--ui-page); }
+body { margin: 0; background: var(--ui-page); color: var(--ui-ink); font-family: Arial, Helvetica, sans-serif; }
+
+.app-header-banner { position: relative; isolation: isolate; }
+
+.app-header-banner { overflow: hidden; background-color: var(--ui-panel); }
+
+.app-header-banner > * { position: relative; z-index: 1; }
+
+.hatch { background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--ui-surface) 3px 4px); }
+.dot { background-image: radial-gradient(var(--ui-surface) 1px, transparent 1.1px); background-size: 4px 4px; }
+.line { background-image: repeating-linear-gradient(90deg, transparent 0 4px, var(--ui-surface) 4px 5px); }
+
+.project-elevated,
+.calendar-elevated,
+.day-tasks-elevated,
+.note-card-elevated {
+  box-shadow: 0 11px 26px var(--ui-elevation);
+}
+
+.chat-bubble-elevated { box-shadow: 0 7px 18px var(--ui-elevation); }
+
+:root[data-theme="dark"] .task-status-indicator.is-complete {
+  background-color: #82d8ab;
+  border-color: #e1ffed;
+  color: #082d21;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #82d8ab 58%, transparent);
+}
+
+:root[data-theme="dark"] .task-status-indicator.is-complete svg {
+  stroke-width: 2.7;
+}
+
+.floating-navigation-elevated {
+  background-color: var(--ui-auth-input);
+  border-color: color-mix(in srgb, var(--ui-ink) 34%, transparent);
+  box-shadow: 0 14px 30px var(--ui-elevation);
+}
+
+input.auth-field { background-color: var(--ui-auth-input); }
+
+input.auth-field:-webkit-autofill,
+input.auth-field:-webkit-autofill:hover,
+input.auth-field:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--ui-auth-input) inset;
+  -webkit-text-fill-color: var(--ui-ink);
+  caret-color: var(--ui-ink);
+}
+
+/* The settings header is fixed inside its panel; only its content may scroll. */
+aside.mobile-scroll { overflow-y: hidden; }
+aside.mobile-scroll > div.flex-1 {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ui-ink) 42%, var(--ui-surface)) var(--ui-surface);
+}
+
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar { width: 8px; background: var(--ui-surface); }
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar-track { background: var(--ui-surface); }
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar-thumb {
+  border: 2px solid var(--ui-surface);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ui-ink) 42%, var(--ui-surface));
+}
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar-button { background: var(--ui-surface); }
+
+:root[data-theme="dark"] aside.mobile-scroll > div.flex-1 {
+  scrollbar-color: #12365d var(--ui-surface);
+}
+
+:root[data-theme="dark"] aside.mobile-scroll > div.flex-1::-webkit-scrollbar-thumb {
+  border-color: var(--ui-surface);
+  background: #12365d;
+}
+
+@media (max-width: 1023px) {
+  .mobile-scroll { scrollbar-width: thin; scrollbar-color: rgba(32, 33, 31, 0.38) transparent; }
+  .mobile-scroll::-webkit-scrollbar { width: 4px; }
+  .mobile-scroll::-webkit-scrollbar-thumb { border-radius: 999px; background: rgba(32, 33, 31, 0.38); }
+}
