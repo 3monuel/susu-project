@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SuSu.Api.Data;
+using SuSu.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,9 @@ builder.Services.AddOpenApi();
 // Conexión a PostgreSQL (la cadena viene de user-secrets, nunca del repo)
 builder.Services.AddDbContext<SusuDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SusuDb")));
+
+// Hash de contraseñas para registro e inicio de sesión
+builder.Services.AddSingleton<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
 
 builder.Services.AddHttpClient<AsistenteIAService>(client =>
 {
