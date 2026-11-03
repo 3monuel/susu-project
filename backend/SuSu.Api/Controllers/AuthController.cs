@@ -49,7 +49,7 @@ public class AuthController : ControllerBase
         {
             await _db.SaveChangesAsync();
         }
-        catch (DbUpdateException)        catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException { SqlState: "23505" })
+        catch (DbUpdateException ex) when (ex.InnerException is Npgsql.PostgresException { SqlState: "23505" })
         {
             // Por si dos personas registran el mismo correo al mismo tiempo
             return Conflict(new { mensaje = "Ese correo ya está registrado." });
