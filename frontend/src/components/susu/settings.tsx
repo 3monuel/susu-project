@@ -12,6 +12,7 @@ import { Icon } from "./icon";
 import { action, secondary, TaskSortControl } from "./tasks";
 import { API_ENABLED } from "@/lib/config";
 import { authService } from "@/lib/auth-service";
+import { clearLocalSession } from "@/lib/auth-storage";
 import { useNavigate } from "@/components/navigation";
 
 export function SettingsPanel({ onClose, isClosing }: { onClose: () => void; isClosing: boolean }) {
@@ -193,9 +194,20 @@ export function SettingsPanel({ onClose, isClosing }: { onClose: () => void; isC
                 Cerrar sesión
               </button>
             ) : (
-              <p className="text-sm text-[var(--ui-muted)]">
-                Modo local activo. No hay una sesión ni contraseñas guardadas.
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-[var(--ui-muted)]">
+                  Modo local activo. Tus proyectos, tareas y notas permanecen guardados en este navegador.
+                </p>
+                <button
+                  className={`${secondary} w-full`}
+                  onClick={() => {
+                    clearLocalSession();
+                    navigate("/iniciar-sesion", { replace: true });
+                  }}
+                >
+                  Salir del modo local
+                </button>
+              </div>
             )}
           </section>
           <section className="py-6">

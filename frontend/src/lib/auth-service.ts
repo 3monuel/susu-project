@@ -1,6 +1,6 @@
 import { API_ENABLED } from "./config";
 import { apiFetch } from "./http";
-import { clearToken, setToken } from "./auth-storage";
+import { clearToken, setSessionUserId, setToken } from "./auth-storage";
 import type { User } from "./types";
 
 type AuthResult = { token: string; user: User };
@@ -13,6 +13,7 @@ export const authService = {
       body: JSON.stringify({ email, password }),
     });
     setToken(result.token);
+    setSessionUserId(result.user.id);
     return result.user;
   },
   async register(name: string, email: string, password: string) {
@@ -21,6 +22,7 @@ export const authService = {
       body: JSON.stringify({ name, email, password }),
     });
     setToken(result.token);
+    setSessionUserId(result.user.id);
     return result.user;
   },
   async logout() {

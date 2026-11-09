@@ -1,5 +1,3 @@
-/* The tour can still close when storage is unavailable. */
-
 // DOM rectangles include the interface scale; scroll offsets and padding do not.
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "@/components/navigation";
@@ -18,7 +16,6 @@ import {
   AppHeader,
   FloatingNavigation,
   SecondaryScreen,
-  WelcomeTour,
   useMobileHeaderVisibility,
 } from "./shell";
 import { TaskForm, TaskList, AllTasks } from "./tasks";
@@ -319,20 +316,6 @@ export function ProjectsScreen() {
   const location = useLocation();
   const isFormOpen = location.pathname === "/nuevo-proyecto";
   const { isHidden, onScroll } = useMobileHeaderVisibility();
-  const [welcomeOpen, setWelcomeOpen] = useState(() => {
-    try {
-      return localStorage.getItem("uniplan-onboarding-pending") === "true";
-    } catch {
-      return false;
-    }
-  });
-  const completeWelcome = () => {
-    try {
-      localStorage.removeItem("uniplan-onboarding-pending");
-    } catch {}
-    setWelcomeOpen(false);
-  };
-
   useEffect(() => {
     if (!isFormOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -433,7 +416,6 @@ export function ProjectsScreen() {
       </div>
       {!isFormOpen && <FloatingNavigation />}
       {isFormOpen && <ProjectForm />}
-      {welcomeOpen && <WelcomeTour onComplete={completeWelcome} />}
     </div>
   );
 }

@@ -1,6 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "@/components/navigation";
 import { authService } from "@/lib/auth-service";
+import { startLocalSession } from "@/lib/auth-storage";
+import { hasCompletedWelcomeTour } from "@/lib/onboarding";
 import { action, field, label, secondary } from "./tasks";
 import { WelcomeTour } from "./shell";
 
@@ -36,7 +38,7 @@ export function LocalAccess({
     try {
       if (screen === "register") await authService.register(name, email, password);
       else await authService.login(email, password);
-      navigate("/");
+      navigate(hasCompletedWelcomeTour() ? "/" : "/bienvenida", { replace: true });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "No se pudo completar el acceso.");
     } finally {
@@ -119,27 +121,42 @@ export function LocalAccess({
               <p className="my-6 text-sm leading-7 text-[var(--ui-muted)]">
                 {authService.isConfigured
                   ? "Este flujo aún no está definido por la API. No se enviará ningún dato."
-                  : "Proyectos, tareas y notas se guardan en tu navegador. No se recopilan contraseñas ni se simulan verificaciones."}
+                  : "La conexión de cuentas estará disponible cuando conectemos el servidor. Por ahora puedes continuar en modo local: tus proyectos, tareas y notas se guardarán en este navegador."}
               </p>
-              <button className={`${action} w-full`} onClick={() => navigate("/")}>
-                Abrir mi espacio local
-              </button>
+              {!authService.isConfigured && (
+                <button
+                  className={`${action} w-full`}
+                  onClick={() => {
+                    startLocalSession();
+                    navigate(hasCompletedWelcomeTour() ? "/" : "/bienvenida", {
+                      replace: true,
+                    });
+                  }}
+                >
+                  Abrir mi espacio local
+                </button>
+              )}
             </>
           )}
           <button className={`${secondary} mt-4 w-full`} onClick={() => setTour(true)}>
             Conocer Susu
           </button>
-          <div className="mt-7 flex justify-center gap-5 text-xs text-[var(--ui-muted)]">
-            <button
-              onClick={() => navigate("/iniciar-sesion")}
-              className="underline underline-offset-4"
-            >
-              Iniciar sesión
-            </button>
-            <button onClick={() => navigate("/registro")} className="underline underline-offset-4">
-              Registro
-            </button>
-          </div>
+          {authService.isConfigured && (
+            <div className="mt-7 flex justify-center gap-5 text-xs text-[var(--ui-muted)]">
+              <button
+                onClick={() => navigate("/iniciar-sesion")}
+                className="underline underline-offset-4"
+              >
+                Iniciar sesión
+              </button>
+              <button
+                onClick={() => navigate("/registro")}
+                className="underline underline-offset-4"
+              >
+                Registro
+              </button>
+            </div>
+          )}
         </div>
       </main>
       {tour && <WelcomeTour onComplete={() => setTour(false)} />}
