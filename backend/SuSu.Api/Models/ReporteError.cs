@@ -17,5 +17,7 @@ public partial class ReporteError
 
     public DateTime Fecha { get; set; }
 
+    public string Estado { get; set; } = null!;
+
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
 }

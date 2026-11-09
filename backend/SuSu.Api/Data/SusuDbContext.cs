@@ -92,9 +92,13 @@ public partial class SusuDbContext : DbContext
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id_nota");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.FechaActualizacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_actualizacion");
             entity.Property(e => e.FechaCreacion)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaEliminacion).HasColumnName("fecha_eliminacion");
             entity.Property(e => e.IdProyecto).HasColumnName("id_proyecto");
             entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
             entity.Property(e => e.Titulo).HasColumnName("titulo");
@@ -117,12 +121,21 @@ public partial class SusuDbContext : DbContext
 
             entity.HasIndex(e => e.IdUsuario, "ix_proyecto_usuario");
 
+            entity.HasIndex(e => new { e.IdProyecto, e.IdUsuario }, "proyecto_id_usuario_uk").IsUnique();
+
             entity.Property(e => e.IdProyecto)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id_proyecto");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
             entity.Property(e => e.DificultadEstimada).HasColumnName("dificultad_estimada");
             entity.Property(e => e.DuracionEstimada).HasColumnName("duracion_estimada");
+            entity.Property(e => e.FechaActualizacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_actualizacion");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaEliminacion).HasColumnName("fecha_eliminacion");
             entity.Property(e => e.FechaInicio).HasColumnName("fecha_inicio");
             entity.Property(e => e.FechaLimite).HasColumnName("fecha_limite");
             entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
@@ -147,6 +160,9 @@ public partial class SusuDbContext : DbContext
                 .HasColumnName("id_reporte");
             entity.Property(e => e.ApartadoAfectado).HasColumnName("apartado_afectado");
             entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+            entity.Property(e => e.Estado)
+                .HasDefaultValueSql("'Pendiente'::text")
+                .HasColumnName("estado");
             entity.Property(e => e.Fecha)
                 .HasDefaultValueSql("now()")
                 .HasColumnName("fecha");
@@ -197,6 +213,8 @@ public partial class SusuDbContext : DbContext
 
             entity.HasIndex(e => e.IdProyecto, "ix_tarea_proyecto");
 
+            entity.HasIndex(e => e.IdUsuario, "ix_tarea_usuario");
+
             entity.Property(e => e.IdTarea)
                 .UseIdentityAlwaysColumn()
                 .HasColumnName("id_tarea");
@@ -205,20 +223,43 @@ public partial class SusuDbContext : DbContext
             entity.Property(e => e.Estado)
                 .HasDefaultValueSql("'PorHacer'::text")
                 .HasColumnName("estado");
+            entity.Property(e => e.FechaActualizacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_actualizacion");
+            entity.Property(e => e.FechaCreacion)
+                .HasDefaultValueSql("now()")
+                .HasColumnName("fecha_creacion");
+            entity.Property(e => e.FechaEliminacion).HasColumnName("fecha_eliminacion");
             entity.Property(e => e.FechaLimite).HasColumnName("fecha_limite");
+            entity.Property(e => e.FechaRecordatorio).HasColumnName("fecha_recordatorio");
             entity.Property(e => e.IdProyecto).HasColumnName("id_proyecto");
             entity.Property(e => e.IdTareaPadre).HasColumnName("id_tarea_padre");
+            entity.Property(e => e.IdUsuario).HasColumnName("id_usuario");
             entity.Property(e => e.Nombre).HasColumnName("nombre");
             entity.Property(e => e.Orden).HasColumnName("orden");
+            entity.Property(e => e.Prioridad)
+                .HasDefaultValueSql("'Media'::text")
+                .HasColumnName("prioridad");
 
-            entity.HasOne(d => d.IdProyectoNavigation).WithMany(p => p.Tarea)
+            entity.HasOne(d => d.IdProyectoNavigation).WithMany(p => p.TareaIdProyectoNavigation)
                 .HasForeignKey(d => d.IdProyecto)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("tarea_id_proyecto_fkey");
 
             entity.HasOne(d => d.IdTareaPadreNavigation).WithMany(p => p.InverseIdTareaPadreNavigation)
                 .HasForeignKey(d => d.IdTareaPadre)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("tarea_id_tarea_padre_fkey");
+
+            entity.HasOne(d => d.IdUsuarioNavigation).WithMany(p => p.Tarea)
+                .HasForeignKey(d => d.IdUsuario)
+                .HasConstraintName("tarea_id_usuario_fkey");
+
+            entity.HasOne(d => d.Proyecto).WithMany(p => p.TareaProyecto)
+                .HasPrincipalKey(p => new { p.IdProyecto, p.IdUsuario })
+                .HasForeignKey(d => new { d.IdProyecto, d.IdUsuario })
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("tarea_proyecto_mismo_usuario_fk");
         });
 
         modelBuilder.Entity<Usuario>(entity =>

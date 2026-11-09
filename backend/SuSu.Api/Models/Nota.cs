@@ -17,6 +17,10 @@ public partial class Nota
 
     public DateTime FechaCreacion { get; set; }
 
+    public DateTime FechaActualizacion { get; set; }
+
+    public DateTime? FechaEliminacion { get; set; }
+
     public virtual Proyecto? IdProyectoNavigation { get; set; }
 
     public virtual Usuario IdUsuarioNavigation { get; set; } = null!;

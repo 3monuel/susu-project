@@ -7,7 +7,7 @@ public partial class Tarea
 {
     public int IdTarea { get; set; }
 
-    public int IdProyecto { get; set; }
+    public int? IdProyecto { get; set; }
 
     public int? IdTareaPadre { get; set; }
 
@@ -23,9 +23,25 @@ public partial class Tarea
 
     public DateOnly? FechaLimite { get; set; }
 
-    public virtual Proyecto IdProyectoNavigation { get; set; } = null!;
+    public int IdUsuario { get; set; }
+
+    public string Prioridad { get; set; } = null!;
+
+    public DateTime? FechaRecordatorio { get; set; }
+
+    public DateTime FechaCreacion { get; set; }
+
+    public DateTime FechaActualizacion { get; set; }
+
+    public DateTime? FechaEliminacion { get; set; }
+
+    public virtual Proyecto? IdProyectoNavigation { get; set; }
 
     public virtual Tarea? IdTareaPadreNavigation { get; set; }
 
+    public virtual Usuario IdUsuarioNavigation { get; set; } = null!;
+
     public virtual ICollection<Tarea> InverseIdTareaPadreNavigation { get; set; } = new List<Tarea>();
+
+    public virtual Proyecto? Proyecto { get; set; }
 }
