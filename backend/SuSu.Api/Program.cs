@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using SuSu.Api.Data;
 using SuSu.Api.Models;
+using SuSu.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +20,29 @@ builder.Services.AddDbContext<SusuDbContext>(options =>
 
 // Hash de contraseñas para registro e inicio de sesión
 builder.Services.AddSingleton<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();
+
+// Tokens JWT (la clave Jwt:Key viene de user-secrets)
+builder.Services.AddSingleton<TokenService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false; // conserva "sub" tal cual
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = TokenService.Issuer,
+            ValidateAudience = true,
+            ValidAudience = TokenService.Audience,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = TokenService.CrearLlave(builder.Configuration),
+            ClockSkew = TimeSpan.FromMinutes(1)
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddHttpClient<AsistenteIAService>(client =>
 {
@@ -34,7 +60,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseAuthorization();
+app.UseAuthentication(); // primero: ¿quién eres?
+app.UseAuthorization();  // después: ¿tienes permiso?
 
 app.MapControllers();
 

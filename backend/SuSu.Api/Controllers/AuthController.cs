@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.JsonWebTokens;
 using SuSu.Api.Data;
 using SuSu.Api.Dtos;
 using SuSu.Api.Models;
+using SuSu.Api.Services;
 
 namespace SuSu.Api.Controllers;
 
@@ -15,11 +18,13 @@ public class AuthController : ControllerBase
 
     private readonly SusuDbContext _db;
     private readonly IPasswordHasher<Usuario> _hasher;
+    private readonly TokenService _tokens;
 
-    public AuthController(SusuDbContext db, IPasswordHasher<Usuario> hasher)
+    public AuthController(SusuDbContext db, IPasswordHasher<Usuario> hasher, TokenService tokens)
     {
         _db = db;
         _hasher = hasher;
+        _tokens = tokens;
     }
 
     // POST api/auth/registro
@@ -60,13 +65,12 @@ public class AuthController : ControllerBase
 
     // POST api/auth/login
     [HttpPost("login")]
-    public async Task<ActionResult<UsuarioResponse>> Login(LoginRequest request)
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request)
     {
         var correo = NormalizarCorreo(request.Correo);
         var usuario = await _db.Usuario.FirstOrDefaultAsync(u => u.Correo == correo);
 
-        // Mismo mensaje si no existe el correo o si la contraseña está mal,
-        // para no revelar qué correos están registrados
+        // Mismo mensaje si no existe el correo o si la contraseña está mal
         if (usuario is null)
             return Unauthorized(new { mensaje = MensajeLoginInvalido });
 
@@ -78,12 +82,29 @@ public class AuthController : ControllerBase
         if (usuario.EstadoCuenta != "activa")
             return StatusCode(StatusCodes.Status403Forbidden, new { mensaje = "La cuenta está desactivada." });
 
-        // Si el algoritmo de hash se actualiza en el futuro, se re-cifra al entrar
         if (resultado == PasswordVerificationResult.SuccessRehashNeeded)
         {
             usuario.ContrasenaHash = _hasher.HashPassword(usuario, request.Contrasena);
             await _db.SaveChangesAsync();
         }
+
+        var (token, expira) = _tokens.Crear(usuario);
+        return Ok(new LoginResponse(token, expira, ARespuesta(usuario)));
+    }
+
+    // GET api/auth/yo  (solo con token válido)
+    [Authorize]
+    [HttpGet("yo")]
+    public async Task<ActionResult<UsuarioResponse>> Yo()
+    {
+        // El id sale del token firmado, nunca de lo que mande el frontend
+        var sub = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (!int.TryParse(sub, out var idUsuario))
+            return Unauthorized();
+
+        var usuario = await _db.Usuario.FindAsync(idUsuario);
+        if (usuario is null || usuario.EstadoCuenta != "activa")
+            return Unauthorized();
 
         return Ok(ARespuesta(usuario));
     }

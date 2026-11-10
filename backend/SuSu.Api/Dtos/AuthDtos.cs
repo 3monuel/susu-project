@@ -39,3 +39,10 @@ public record UsuarioResponse(
     string? Curso,
     DateTime FechaRegistro
 );
+
+// Lo que devuelve el login: el token + los datos del usuario
+public record LoginResponse(
+    string Token,
+    DateTime Expira,
+    UsuarioResponse Usuario
+);
