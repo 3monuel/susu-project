@@ -68,3 +68,12 @@ El nombre viene del kanji japonés \*Susumu\* (進む), que significa avanzar/pr
 4. Comprueba con `docker compose ps` que `susu-postgres` esté `healthy`.
 
 La primera vez, Docker crea las tablas con `database/init.sql`. Para empezar de cero (borra los datos): `docker compose down -v` y luego `docker compose up -d`.
+
+## Cómo correr el frontend
+
+1. Instala Node.js 22.12 o superior.
+2. Desde la carpeta `frontend`: `npm install`.
+3. Copia `.env.example` como `.env`. Déjalo vacío para usar el modo local, o pon `VITE_API_URL=http://localhost:5196` para conectar con el backend.
+4. `npm run dev` y abre <http://localhost:5173>.
+
+Más detalles en [`frontend/README.md`](frontend/README.md). Lo que falta para conectar el frontend con el backend está en [`docs/compatibilidad-frontend-backend.md`](docs/compatibilidad-frontend-backend.md).

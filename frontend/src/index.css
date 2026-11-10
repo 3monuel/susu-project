@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap');
-@import 'tailwindcss';
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap");
+@import "tailwindcss";
 
 :root {
   --font-display: "Newsreader", Georgia, serif;
@@ -50,33 +50,204 @@
   --ui-elevation: rgba(0, 9, 36, 0.46);
 }
 
-html { background: var(--ui-page); }
-body { margin: 0; background: var(--ui-page); color: var(--ui-ink); font-family: Arial, Helvetica, sans-serif; }
+html {
+  background: var(--ui-page);
+}
+body {
+  margin: 0;
+  background: var(--ui-page);
+  color: var(--ui-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+:root {
+  --interface-scale: 1;
+}
+:root[data-interface-size="pequeño"] {
+  --interface-scale: 0.86;
+}
+:root[data-interface-size="normal"] {
+  --interface-scale: 1;
+}
+:root[data-interface-size="grande"] {
+  --interface-scale: 1.16;
+}
+
+#root {
+  min-height: 100dvh;
+  transform: scale(var(--interface-scale));
+  transform-origin: top left;
+  width: 100%;
+}
+
+:root[data-interface-size="pequeño"] #root {
+  min-height: 116.3dvh;
+  width: 116.3%;
+}
+
+:root[data-interface-size="grande"] #root {
+  min-height: 86.3dvh;
+  width: 86.3%;
+}
+
+/* Body portals inherit the same scale without changing their fixed containing block. */
+.floating-scale {
+  scale: var(--interface-scale);
+  transform-origin: top right;
+}
+
+.floating-navigation-elevated,
+.floating-composer {
+  transform-origin: bottom center;
+  max-width: calc((100vw - 2 * var(--spacing) * 4) / var(--interface-scale));
+}
+
+.floating-composer {
+  bottom: calc(3rem + 5.5rem * var(--interface-scale));
+}
+
+@media (max-width: 639px) {
+  .floating-navigation-elevated > div > button {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .floating-composer {
+    bottom: calc(4.5rem + 6rem * var(--interface-scale));
+  }
+}
 
 * {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--ui-ink) 45%, transparent) transparent;
 }
 
-*::-webkit-scrollbar { width: 7px; height: 7px; }
-*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
 *::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
   background: color-mix(in srgb, var(--ui-ink) 45%, transparent);
   background-clip: padding-box;
 }
-*::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--ui-ink) 65%, transparent); }
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--ui-ink) 65%, transparent);
+}
 
-.app-header-banner { position: relative; isolation: isolate; }
+.app-header-banner {
+  isolation: isolate;
+  right: 0;
+}
 
-.app-header-banner { overflow: hidden; background-color: var(--ui-panel); }
+/* Floating mode changes surfaces only; button geometry and panel alignment stay identical. */
+.app-toolbar.is-floating .toolbar-home {
+  background-color: var(--ui-action);
+  color: var(--ui-surface);
+  box-shadow: 0 8px 26px var(--ui-elevation);
+}
 
-.app-header-banner > * { position: relative; z-index: 1; }
+.app-toolbar.is-floating .toolbar-action {
+  background-color: color-mix(in srgb, var(--ui-surface) 85%, transparent);
+  border-color: color-mix(in srgb, var(--ui-ink) 15%, transparent);
+  box-shadow: 0 8px 26px var(--ui-elevation);
+  backdrop-filter: blur(16px);
+}
 
-.hatch { background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--ui-surface) 3px 4px); }
-.dot { background-image: radial-gradient(var(--ui-surface) 1px, transparent 1.1px); background-size: 4px 4px; }
-.line { background-image: repeating-linear-gradient(90deg, transparent 0 4px, var(--ui-surface) 4px 5px); }
+/* Main screens share one internal scrollbar, including at non-default scales. */
+body:has(.app-screen-layout) {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app-screen-layout {
+  height: calc(100dvh / var(--interface-scale));
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-screen-layout > .relative {
+  height: 100%;
+  min-height: 0;
+}
+
+.app-screen-content {
+  position: relative;
+  z-index: 1;
+  /* A constant inset keeps the scrollbar below the header without scroll feedback. */
+  margin-top: 78px;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ui-ink) 45%, transparent) transparent;
+}
+
+.app-screen-content::-webkit-scrollbar,
+.app-screen-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-screen-content::-webkit-scrollbar-button {
+  display: none;
+}
+.app-screen-content::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Preserve the existing content spacing without counting the header twice. */
+.app-screen-content {
+  padding-top: calc(9 * var(--spacing));
+}
+@media (min-width: 640px) {
+  .app-screen-content {
+    padding-top: calc(12 * var(--spacing));
+  }
+}
+@media (min-width: 1024px) {
+  .app-screen-content {
+    padding-top: calc(14 * var(--spacing));
+  }
+}
+
+/* Leave a clear scroll destination above the fixed navigation when adding a task. */
+.app-screen-content:has(.calendar-task-form) {
+  padding-bottom: calc(var(--calendar-task-clearance, 13rem) + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(
+    var(--calendar-task-clearance, 13rem) + env(safe-area-inset-bottom, 0px)
+  );
+}
+
+/* Keep project task actions reachable above the floating navigation, even in long lists. */
+.app-screen-content:has(#project-task-list) {
+  padding-bottom: calc(13rem + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(13rem + env(safe-area-inset-bottom, 0px));
+}
+
+.app-header-banner {
+  overflow: hidden;
+  background-color: var(--ui-panel);
+}
+
+.app-header-banner > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hatch {
+  background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--ui-surface) 3px 4px);
+}
+.dot {
+  background-image: radial-gradient(var(--ui-surface) 1px, transparent 1.1px);
+  background-size: 4px 4px;
+}
+.line {
+  background-image: repeating-linear-gradient(90deg, transparent 0 4px, var(--ui-surface) 4px 5px);
+}
 
 .project-elevated,
 .calendar-elevated,
@@ -85,7 +256,9 @@ body { margin: 0; background: var(--ui-page); color: var(--ui-ink); font-family:
   box-shadow: 0 11px 26px var(--ui-elevation);
 }
 
-.chat-bubble-elevated { box-shadow: 0 7px 18px var(--ui-elevation); }
+.chat-bubble-elevated {
+  box-shadow: 0 7px 18px var(--ui-elevation);
+}
 
 :root[data-theme="dark"] .task-status-indicator.is-complete {
   background-color: #82d8ab;
@@ -104,12 +277,285 @@ body { margin: 0; background: var(--ui-page); color: var(--ui-ink); font-family:
   box-shadow: 0 14px 30px var(--ui-elevation);
 }
 
-input.auth-field { background-color: var(--ui-auth-input); }
+.settings-overlay {
+  animation: settings-overlay-enter 240ms ease-out both;
+}
 
-.auth-brand-mark-dark { display: none; }
+.settings-overlay.is-closing {
+  animation: settings-overlay-exit 240ms ease-in both;
+}
 
-:root[data-theme="dark"] .auth-brand-mark-light { display: none; }
-:root[data-theme="dark"] .auth-brand-mark-dark { display: block; }
+.settings-drawer {
+  animation: settings-drawer-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.settings-drawer.is-closing {
+  animation: settings-drawer-exit 240ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+.project-form-overlay {
+  animation: project-form-overlay-enter 240ms ease-out both;
+}
+
+.project-form-panel {
+  animation: project-form-enter 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.project-form-overlay.is-closing {
+  animation: project-form-overlay-exit 240ms ease-in both;
+}
+
+.project-form-panel.is-closing {
+  animation: project-form-exit 240ms cubic-bezier(0.4, 0, 0.6, 1) both;
+}
+
+@keyframes settings-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes settings-overlay-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes settings-drawer-enter {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes settings-drawer-exit {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes project-form-overlay-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes project-form-overlay-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes project-form-enter {
+  from {
+    filter: blur(3px);
+    opacity: 0;
+    transform: translateY(3rem) scale(0.98);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes project-form-exit {
+  from {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    filter: blur(3px);
+    opacity: 0;
+    transform: translateY(3rem) scale(0.98);
+  }
+}
+
+.route-static-header {
+  view-transition-name: app-header;
+}
+.route-static-navigation {
+  view-transition-name: app-navigation;
+}
+
+@keyframes route-slide-out-left {
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes route-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes route-slide-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes route-slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes route-liquid-minimize {
+  0% {
+    clip-path: inset(0 round 0);
+    filter: blur(0) saturate(1);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  58% {
+    clip-path: inset(2% 3% round 2rem);
+    filter: blur(1px) saturate(1.12);
+    opacity: 1;
+    transform: translateY(4%) scale(0.84);
+  }
+  100% {
+    clip-path: inset(38% 40% round 999px);
+    filter: blur(10px) saturate(0.75);
+    opacity: 0;
+    transform: translateY(25%) scale(0.2);
+  }
+}
+
+@keyframes route-home-reveal {
+  from {
+    filter: blur(5px);
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes route-auth-exit {
+  to {
+    filter: blur(3px);
+    opacity: 0;
+    transform: translateY(-0.75rem) scale(0.97);
+  }
+}
+
+@keyframes route-workspace-enter {
+  from {
+    filter: blur(4px);
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+  to {
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+:root[data-route-transition="forward"]::view-transition-old(root) {
+  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both route-slide-out-left;
+}
+
+:root[data-route-transition="forward"]::view-transition-new(root) {
+  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both route-slide-in-right;
+}
+
+:root[data-route-transition="backward"]::view-transition-old(root) {
+  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both route-slide-out-right;
+}
+
+:root[data-route-transition="backward"]::view-transition-new(root) {
+  animation: 280ms cubic-bezier(0.4, 0, 0.2, 1) both route-slide-in-left;
+}
+
+:root[data-route-transition="home"]::view-transition-old(root) {
+  animation: 360ms cubic-bezier(0.5, 0, 0.7, 0.2) both route-liquid-minimize;
+}
+
+:root[data-route-transition="home"]::view-transition-new(root) {
+  animation: 240ms 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both route-home-reveal;
+}
+
+:root[data-route-transition="app-entry"]::view-transition-old(root) {
+  animation: 180ms ease-in both route-auth-exit;
+}
+
+:root[data-route-transition="app-entry"]::view-transition-new(root) {
+  animation: 260ms 90ms cubic-bezier(0.2, 0.8, 0.2, 1) both route-workspace-enter;
+}
+
+:root::view-transition-old(app-header),
+:root::view-transition-old(app-navigation) {
+  animation: none;
+  opacity: 0;
+}
+
+:root::view-transition-new(app-header),
+:root::view-transition-new(app-navigation) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after {
+  animation: none !important;
+  scroll-behavior: auto !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root::view-transition-group(root),
+  :root::view-transition-old(root),
+  :root::view-transition-new(root) {
+    animation: none;
+  }
+
+  .settings-overlay,
+  .settings-drawer,
+  .project-form-overlay,
+  .project-form-panel {
+    animation: none;
+  }
+}
+
+input.auth-field {
+  background-color: var(--ui-auth-input);
+}
+
+.auth-brand-mark-dark {
+  display: none;
+}
+
+:root[data-theme="dark"] .auth-brand-mark-light {
+  display: none;
+}
+:root[data-theme="dark"] .auth-brand-mark-dark {
+  display: block;
+}
 
 input.auth-field:-webkit-autofill,
 input.auth-field:-webkit-autofill:hover,
@@ -120,7 +566,9 @@ input.auth-field:-webkit-autofill:focus {
 }
 
 /* The settings header is fixed inside its panel; only its content may scroll. */
-aside.mobile-scroll { overflow-y: hidden; }
+aside.mobile-scroll {
+  overflow-y: hidden;
+}
 aside.mobile-scroll > div.flex-1 {
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -128,16 +576,66 @@ aside.mobile-scroll > div.flex-1 {
   scrollbar-color: color-mix(in srgb, var(--ui-ink) 45%, transparent) transparent;
 }
 
-aside.mobile-scroll > div.flex-1::-webkit-scrollbar { width: 7px; background: transparent; }
-aside.mobile-scroll > div.flex-1::-webkit-scrollbar-track { background: transparent; }
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar {
+  width: 7px;
+  background: transparent;
+}
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar-track {
+  background: transparent;
+}
 aside.mobile-scroll > div.flex-1::-webkit-scrollbar-thumb {
   border: 2px solid transparent;
   border-radius: 999px;
   background: color-mix(in srgb, var(--ui-ink) 45%, transparent);
   background-clip: padding-box;
 }
-aside.mobile-scroll > div.flex-1::-webkit-scrollbar-button { background: transparent; }
+aside.mobile-scroll > div.flex-1::-webkit-scrollbar-button {
+  background: transparent;
+}
 
 @media (max-width: 1023px) {
-  .mobile-scroll::-webkit-scrollbar { width: 5px; }
+  .mobile-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+}
+
+.figma-custom-code-fragment {
+  display: contents;
+}
+
+.figma-bypass-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 2147483647;
+  transform: translateY(-150%);
+  border-radius: 6px;
+  background: #111827;
+  color: #fff;
+  padding: 8px 12px;
+  font:
+    600 14px/1.2 system-ui,
+    sans-serif;
+  text-decoration: none;
+}
+
+.figma-bypass-link:focus {
+  transform: translateY(0);
+}
+
+@theme inline {
+  --font-mono: "DM Mono", monospace;
+}
+button,
+a,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+select {
+  cursor: pointer;
+}
+:focus-visible {
+  outline: 2px solid var(--ui-ink);
+  outline-offset: 4px;
 }
