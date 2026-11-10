@@ -21,6 +21,18 @@ public static class Conversiones
         _ => "media"
     };
 
+    // El frontend usa 2 estados y la base 3.
+    // "pending" no borra el EnProgreso que haya puesto el Kanban.
+    public static string EstadoADb(string? valor, string? estadoActual) =>
+        (valor ?? "pending").Trim().ToLowerInvariant() switch
+        {
+            "completed" => "Terminada",
+            _ => estadoActual == "EnProgreso" ? "EnProgreso" : "PorHacer"
+        };
+
+    public static string EstadoDesdeDb(string? valor) =>
+        valor == "Terminada" ? "completed" : "pending";
+
     // Acepta "2026-11-20" o "2026-11-20T..." y toma solo la fecha
     public static DateOnly? FechaADb(string? valor)
     {
