@@ -22,6 +22,9 @@ export function SettingsPanel({ onClose, isClosing }: { onClose: () => void; isC
   const [theme, setTheme] = useState(document.documentElement.dataset.theme ?? "light");
   const [size, setSize] = useState(document.documentElement.dataset.interfaceSize ?? "normal");
   const [motion, setMotion] = useState(document.documentElement.dataset.reduceMotion === "true");
+  const [highContrast, setHighContrast] = useState(
+    document.documentElement.dataset.contrast === "high",
+  );
   const [message, setMessage] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<"notes" | "projects" | "all" | null>(null);
   useEffect(() => {
@@ -60,6 +63,10 @@ export function SettingsPanel({ onClose, isClosing }: { onClose: () => void; isC
       if (key === "interface-size") {
         document.documentElement.dataset.interfaceSize = value.toLowerCase();
         setSize(value.toLowerCase());
+      }
+      if (key === "contrast") {
+        document.documentElement.dataset.contrast = value;
+        setHighContrast(value === "high");
       }
       if (key === "reduce-motion") {
         document.documentElement.dataset.reduceMotion = value;
@@ -236,6 +243,24 @@ export function SettingsPanel({ onClose, isClosing }: { onClose: () => void; isC
               <span>Reducir animaciones</span>
               <span>{motion ? "Activado" : "Desactivado"}</span>
             </button>
+            <button
+              role="switch"
+              aria-checked={highContrast}
+              onClick={() => preference("contrast", highContrast ? "normal" : "high")}
+              className="mt-2 flex w-full justify-between py-2 text-left text-sm"
+            >
+              <span>Alto contraste</span>
+              <span>{highContrast ? "Activado" : "Desactivado"}</span>
+            </button>
+            <div className="mt-5 rounded-2xl border border-[var(--ui-ink)]/20 bg-[var(--ui-panel)] p-4 text-sm leading-6">
+              <p className="font-semibold">Navegar con el teclado</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5">
+                <li>Flechas o W, A, S, D: moverse entre botones, tarjetas y campos.</li>
+                <li>Espacio o Enter: activar un botón o marcar una casilla.</li>
+                <li>Tab: avanzar en orden; Esc: cerrar ventanas.</li>
+                <li>Mientras escribes en un campo, las letras no mueven la selección.</li>
+              </ul>
+            </div>
           </section>
           <section className="py-6">
             <h3 className="mb-4 font-mono text-xs uppercase tracking-widest text-[var(--ui-muted)]">
