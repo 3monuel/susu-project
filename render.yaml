@@ -1,0 +1,36 @@
+# Configuración de despliegue en Render (Blueprint).
+# Los secretos (cadena de conexión) se escriben en el panel de Render, nunca aquí.
+services:
+  - type: web
+    name: susu-api-utcj
+    runtime: docker
+    plan: free
+    branch: feature/accesibilidad
+    rootDir: backend/SuSu.Api
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/salud/db
+    envVars:
+      - key: ConnectionStrings__SusuDb
+        sync: false
+      - key: Jwt__Key
+        generateValue: true
+      - key: Cors__Origins__0
+        value: https://susu-utcj.onrender.com
+
+  - type: web
+    name: susu-utcj
+    runtime: static
+    branch: feature/accesibilidad
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://susu-api-utcj.onrender.com
+      - key: NODE_VERSION
+        value: "22"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
