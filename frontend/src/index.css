@@ -50,6 +50,76 @@
   --ui-elevation: rgba(0, 9, 36, 0.46);
 }
 
+/* Alto contraste: texto y bordes con contraste de al menos 7:1 (WCAG AAA). */
+:root[data-contrast="high"] {
+  --ui-page: #ffffff;
+  --ui-surface: #ffffff;
+  --ui-auth-surface: #ffffff;
+  --ui-auth-input: #ffffff;
+  --ui-ink: #000000;
+  --ui-action: #000000;
+  --ui-panel: #ffffff;
+  --ui-panel-hover: #e8e8e8;
+  --ui-project-card: #ffffff;
+  --ui-muted: #1f1f1f;
+  --ui-accent: #ffd400;
+  --ui-success: #00632c;
+  --ui-success-soft: #ffffff;
+  --ui-success-ink: #00521f;
+  --ui-warning: #7a4f00;
+  --ui-warning-soft: #ffffff;
+  --ui-warning-ink: #5c3b00;
+  --ui-danger: #a3001b;
+  --ui-danger-soft: #ffffff;
+  --ui-danger-ink: #8a0016;
+  --ui-elevation: rgba(0, 0, 0, 0.55);
+}
+
+:root[data-contrast="high"][data-theme="dark"] {
+  --ui-page: #000000;
+  --ui-surface: #000000;
+  --ui-auth-surface: #000000;
+  --ui-auth-input: #000000;
+  --ui-ink: #ffffff;
+  --ui-action: #ffe14d;
+  --ui-panel: #000000;
+  --ui-panel-hover: #262626;
+  --ui-project-card: #000000;
+  --ui-muted: #e6e6e6;
+  --ui-accent: #ffe14d;
+  --ui-success: #5eeb9a;
+  --ui-success-soft: #000000;
+  --ui-success-ink: #7ff5b0;
+  --ui-warning: #ffe14d;
+  --ui-warning-soft: #000000;
+  --ui-warning-ink: #ffea80;
+  --ui-danger: #ff8a95;
+  --ui-danger-soft: #000000;
+  --ui-danger-ink: #ffa3ab;
+  --ui-elevation: rgba(255, 255, 255, 0.25);
+}
+
+/* Bordes sólidos y foco grueso para que nada dependa de transparencias. */
+:root[data-contrast="high"] *,
+:root[data-contrast="high"] *::before,
+:root[data-contrast="high"] *::after {
+  border-color: var(--ui-ink) !important;
+}
+:root[data-contrast="high"] :focus-visible {
+  outline: 3px solid var(--ui-ink) !important;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px var(--ui-accent) !important;
+}
+:root[data-contrast="high"] .settings-overlay,
+:root[data-contrast="high"] .project-form-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+:root[data-contrast="high"] .backdrop-blur-sm,
+:root[data-contrast="high"] .backdrop-blur-md,
+:root[data-contrast="high"] .backdrop-blur-xl {
+  backdrop-filter: none;
+}
+
 html {
   background: var(--ui-page);
 }
@@ -214,6 +284,18 @@ body:has(.app-screen-layout) {
   }
 }
 
+/* Deja espacio al final para que la navegación flotante no tape el último contenido. */
+.app-screen-content {
+  --nav-clearance: 14rem;
+  padding-bottom: calc(var(--nav-clearance) + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(var(--nav-clearance) + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
+  .app-screen-content {
+    --nav-clearance: 17rem;
+  }
+}
+
 /* Leave a clear scroll destination above the fixed navigation when adding a task. */
 .app-screen-content:has(.calendar-task-form) {
   padding-bottom: calc(var(--calendar-task-clearance, 13rem) + env(safe-area-inset-bottom, 0px));
@@ -224,8 +306,8 @@ body:has(.app-screen-layout) {
 
 /* Keep project task actions reachable above the floating navigation, even in long lists. */
 .app-screen-content:has(#project-task-list) {
-  padding-bottom: calc(13rem + env(safe-area-inset-bottom, 0px));
-  scroll-padding-bottom: calc(13rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--nav-clearance) + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(var(--nav-clearance) + env(safe-area-inset-bottom, 0px));
 }
 
 .app-header-banner {

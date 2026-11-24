@@ -25,6 +25,7 @@ function ProjectForm() {
   const [error, setError] = useState("");
   const [aiPlan, setAiPlan] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const backdropPress = useRef<{ x: number; y: number } | null>(null);
   const readProject = () => {
     const data = new FormData(formRef.current!);
     return {
@@ -87,8 +88,25 @@ function ProjectForm() {
           first?.focus();
         }
       }}
+      // Solo un clic limpio en el fondo cierra el formulario. Arrastrar o pulsar la barra
+      // de desplazamiento (clásica o superpuesta, como en Windows 11) no lo cierra.
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) closeForm();
+        backdropPress.current = null;
+        if (event.target !== event.currentTarget) return;
+        const overlay = event.currentTarget;
+        const bounds = overlay.getBoundingClientRect();
+        const scale = bounds.width / overlay.offsetWidth || 1;
+        const scrollable = overlay.scrollHeight > overlay.clientHeight;
+        const nearScrollbar =
+          event.clientX >= bounds.left + (overlay.clientLeft + overlay.clientWidth) * scale ||
+          (scrollable && event.clientX >= bounds.right - 24 * scale);
+        if (!nearScrollbar) backdropPress.current = { x: event.clientX, y: event.clientY };
+      }}
+      onMouseUp={(event) => {
+        const press = backdropPress.current;
+        backdropPress.current = null;
+        if (!press || event.target !== event.currentTarget) return;
+        if (Math.hypot(event.clientX - press.x, event.clientY - press.y) < 6) closeForm();
       }}
       className={`project-form-overlay mobile-scroll fixed inset-x-0 bottom-0 top-[78px] z-30 overflow-y-auto overscroll-contain bg-[var(--ui-action)]/20 p-3 backdrop-blur-sm sm:inset-0 sm:p-7 ${
         isClosing ? "is-closing" : ""

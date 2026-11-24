@@ -184,8 +184,9 @@ export function TaskList({ tasks }: { tasks: TaskRecord[] }) {
                     state: done ? "pending" : "completed",
                   })
                 }
-                aria-label={`${done ? "Marcar pendiente" : "Completar"}: ${task.name}`}
-                aria-pressed={done}
+                role="checkbox"
+                aria-checked={done}
+                aria-label={`Tarea completada: ${task.name}`}
                 className={`task-status-indicator mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full border ${
                   done
                     ? "is-complete border-[var(--ui-success)] bg-[var(--ui-success)] text-[var(--ui-success-ink)]"
