@@ -1,16 +1,139 @@
-import { useState } from "react";
-import Link, { useProjectParams } from "@/components/navigation";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import Link, { useNavigate, useProjectParams } from "@/components/navigation";
 import { useWorkspace } from "@/components/workspace-provider";
 import { active, projectTasks, sortTasks, taskProgress } from "@/lib/workspace-model";
 import { Icon } from "./icon";
 import { SecondaryScreen } from "./shell";
 import { action, secondary, formatDate, TaskForm, TaskList, TaskSortControl } from "./tasks";
 
+function DeleteProjectDialog({
+  projectName,
+  taskCount,
+  noteCount,
+  onCancel,
+  onConfirm,
+}: {
+  projectName: string;
+  taskCount: number;
+  noteCount: number;
+  onCancel: () => void;
+  onConfirm: () => Promise<boolean>;
+}) {
+  const [understood, setUnderstood] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const dialog = useRef<HTMLDivElement>(null);
+  const cancel = useRef(onCancel);
+  cancel.current = onCancel;
+
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    const panel = dialog.current!;
+    panel.querySelector<HTMLInputElement>('input[type="checkbox"]')?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") cancel.current();
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        panel.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled])"),
+      );
+      const first = focusable[0],
+        last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKey);
+      document.body.style.overflow = previousOverflow;
+      previous?.focus();
+    };
+  }, []);
+
+  return createPortal(
+    <div
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+      className="fixed inset-0 z-[80] grid place-items-center bg-[var(--ui-action)]/30 p-4 text-[var(--ui-ink)] backdrop-blur-sm"
+    >
+      <div
+        ref={dialog}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-project-title"
+        aria-describedby="delete-project-description"
+        className="w-full max-w-[520px] rounded-[24px] border border-[var(--ui-danger)] bg-[var(--ui-surface)] p-6 shadow-[0_24px_70px_var(--ui-elevation)] sm:p-8"
+      >
+        <span className="grid h-11 w-11 place-items-center rounded-full border border-[var(--ui-danger)] bg-[var(--ui-danger-soft)] text-[var(--ui-danger-ink)]">
+          <Icon name="trash" size={20} />
+        </span>
+        <h2
+          id="delete-project-title"
+          className="mt-5 font-[family-name:var(--font-display)] text-3xl leading-tight tracking-[-0.035em]"
+        >
+          ¿Eliminar «{projectName}»?
+        </h2>
+        <div id="delete-project-description" className="mt-4 space-y-2 text-sm leading-6">
+          <p>
+            Se eliminará el proyecto completo y{" "}
+            <b>{taskCount === 1 ? "su tarea" : `sus ${taskCount} tareas`}</b>, incluidas las
+            subtareas.
+          </p>
+          {noteCount > 0 && (
+            <p>
+              {noteCount === 1
+                ? "La nota asociada se conservará"
+                : `Las ${noteCount} notas asociadas se conservarán`}{" "}
+              sin proyecto.
+            </p>
+          )}
+        </div>
+        <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--ui-danger)] bg-[var(--ui-danger-soft)] p-4 text-sm font-semibold text-[var(--ui-danger-ink)]">
+          <input
+            type="checkbox"
+            checked={understood}
+            onChange={(event) => setUnderstood(event.target.checked)}
+            className="mt-0.5 h-5 w-5 shrink-0 accent-[var(--ui-danger-ink)]"
+          />
+          Entiendo que esta acción no se puede deshacer.
+        </label>
+        <div className="mt-6 flex flex-wrap justify-end gap-3">
+          <button type="button" onClick={onCancel} disabled={busy} className={secondary}>
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!understood || busy}
+            onClick={async () => {
+              setBusy(true);
+              if (!(await onConfirm())) setBusy(false);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--ui-danger-ink)] bg-[var(--ui-danger-ink)] px-5 py-3 font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--ui-surface)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Icon name="trash" size={14} />
+            {busy ? "Eliminando…" : "Eliminar proyecto"}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body,
+  );
+}
+
 export function ProjectDetailScreen() {
   const { projectSlug } = useProjectParams();
-  const { workspace, removeCompleted } = useWorkspace();
+  const { workspace, removeCompleted, deleteProject } = useWorkspace();
+  const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deletingProject, setDeletingProject] = useState(false);
   const project = active(workspace.projects).find((p) => p.slug === projectSlug);
   if (!project)
     return (
@@ -48,10 +171,33 @@ export function ProjectDetailScreen() {
             {project.name}
           </h1>
         </div>
-        <Link href="/" className={secondary}>
-          Ver proyectos
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/" className={secondary}>
+            Ver proyectos
+          </Link>
+          <button
+            type="button"
+            onClick={() => setDeletingProject(true)}
+            className={`${secondary} border-[var(--ui-danger)] text-[var(--ui-danger-ink)]`}
+          >
+            <Icon name="trash" size={14} />
+            Eliminar proyecto
+          </button>
+        </div>
       </div>
+      {deletingProject && (
+        <DeleteProjectDialog
+          projectName={project.name}
+          taskCount={tasks.length}
+          noteCount={notes.length}
+          onCancel={() => setDeletingProject(false)}
+          onConfirm={async () => {
+            const ok = await deleteProject(project.id);
+            if (ok) navigate("/", { replace: true });
+            return ok;
+          }}
+        />
+      )}
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <section className="project-elevated rounded-[24px] border border-[var(--ui-ink)]/20 bg-[var(--ui-project-card)] p-5 sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--ui-ink)]/15 pb-5">

@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
 import WorkspaceProvider from "@/components/workspace-provider";
+import { useKeyboardNavigation } from "@/components/keyboard-navigation";
 import { AssistantScreen } from "@/components/susu/assistant";
 import { ProjectDetailScreen } from "@/components/susu/detail";
 import { LocalAccess } from "@/components/susu/local-access";
@@ -39,6 +40,7 @@ function WelcomeRoute() {
 }
 
 export default function App() {
+  useKeyboardNavigation();
   return (
     <BrowserRouter>
       <Routes>

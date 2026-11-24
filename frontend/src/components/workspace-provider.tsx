@@ -220,6 +220,26 @@ function useWorkspaceStore(initial?: Workspace) {
     }
   };
 
+  // Elimina un proyecto completo. Igual que el backend: sus tareas se borran
+  // y sus notas se conservan, pero quedan sin proyecto.
+  const deleteProject = async (projectId: string) => {
+    try {
+      if (repository instanceof LocalRepository) {
+        const now = new Date().toISOString();
+        for (const task of active(state.current.tasks).filter((t) => t.projectId === projectId))
+          await repository.deleteTask(task.id);
+        for (const note of active(state.current.notes).filter((n) => n.projectId === projectId))
+          await repository.updateNote(note.id, { ...note, projectId: null, updatedAt: now });
+      }
+      await repository.deleteProject(projectId);
+      await load();
+      return true;
+    } catch (cause) {
+      setError(`No se eliminó el proyecto. ${messageFor(cause)}`);
+      return false;
+    }
+  };
+
   const setPreferences = (patch: Partial<Workspace["preferences"]>) => {
     const next = {
       ...state.current,
@@ -268,6 +288,7 @@ function useWorkspaceStore(initial?: Workspace) {
     updateTask,
     saveNote,
     removeCompleted,
+    deleteProject,
     setPreferences,
     commit,
     restoreWorkspace,
