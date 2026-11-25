@@ -9,7 +9,7 @@ services:
     rootDir: backend/SuSu.Api
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    healthCheckPath: /api/salud/db
+    healthCheckPath: /api/salud
     envVars:
       - key: ConnectionStrings__SusuDb
         sync: false
