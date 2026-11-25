@@ -69,10 +69,11 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+// Asistente de IA (Google Gemini). La clave Gemini:ApiKey se agrega en cada petición.
 builder.Services.AddHttpClient<AsistenteIAService>(client =>
 {
     client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
-    client.DefaultRequestHeaders.Add("x-goog-api-key", builder.Configuration["Gemini:ApiKey"]);
+    client.Timeout = TimeSpan.FromSeconds(60);
 });
 
 var app = builder.Build();
