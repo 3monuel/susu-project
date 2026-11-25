@@ -30,6 +30,13 @@ services:
         value: https://susu-api-utcj.onrender.com
       - key: NODE_VERSION
         value: "22"
+    headers:
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      - path: /manifest.json
+        name: Cache-Control
+        value: no-cache
     routes:
       - type: rewrite
         source: /*
