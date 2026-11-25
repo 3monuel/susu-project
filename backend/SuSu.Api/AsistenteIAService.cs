@@ -92,11 +92,12 @@ public class AsistenteIAService
         _logger = logger;
         _apiKey = config["Gemini:ApiKey"];
         var principal = config["Gemini:Model"];
-        // Si el modelo principal no existe o está saturado, se intenta con el de respaldo.
+        // Si el modelo principal no existe, está saturado o sin cuota, se intenta con los de respaldo.
         _modelos = new[]
         {
             string.IsNullOrWhiteSpace(principal) ? "gemini-3.8-flash" : principal.Trim(),
-            "gemini-3.5-flash",
+            "gemini-3.6-flash",
+            "gemini-3.5-flash-lite",
         }.Distinct().ToArray();
     }
 
@@ -157,13 +158,17 @@ public class AsistenteIAService
                     (int)respuesta.StatusCode, modelo, Recortar(detalle, 600));
 
                 var hayRespaldo = i < _modelos.Length - 1;
-                if (hayRespaldo && respuesta.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.TooManyRequests)
+                // 404 = modelo inexistente, 429 = sin cuota, 5xx = saturado o caído: vale la pena otro modelo.
+                if (hayRespaldo && (respuesta.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.TooManyRequests
+                        || (int)respuesta.StatusCode >= 500))
                     continue;
 
                 throw new AsistenteNoDisponibleException(respuesta.StatusCode switch
                 {
                     HttpStatusCode.TooManyRequests =>
                         "El asistente recibió demasiadas solicitudes. Intenta de nuevo en un minuto.",
+                    HttpStatusCode.ServiceUnavailable =>
+                        "La IA está saturada en este momento. Intenta de nuevo en un minuto.",
                     HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden or HttpStatusCode.BadRequest
                         when detalle.Contains("API key", StringComparison.OrdinalIgnoreCase) =>
                         "La clave del asistente de IA no es válida. Revisa la configuración del servidor.",
