@@ -117,9 +117,11 @@ function useWorkspaceStore(initial?: Workspace) {
       }-${meta.id.slice(0, 8)}`,
     };
     try {
-      await repository.createProject(record);
+      // El servidor asigna su propio id y slug (el número del proyecto); se usa lo que
+      // devuelve para que la ruta /proyectos/<slug> exista en la lista recién cargada.
+      const saved = await repository.createProject(record);
       await load();
-      return record;
+      return { ...record, ...saved };
     } catch (cause) {
       setError(`No se guardó el proyecto. ${messageFor(cause)}`);
       return null;
